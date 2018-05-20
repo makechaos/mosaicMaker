@@ -35,7 +35,7 @@ class mosaic():
     self.postProcess()
     # store as image
     self.img = Image.fromarray(self.img, mode='RGB')
-    self.img.save()
+    self.img.save(self.project+'.png')
     print('Mosaic image : '+self.project+'.png')
     print('DONE.')
     
