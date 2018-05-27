@@ -4,39 +4,9 @@ import os
 import glob
 import numpy as np
 
-
-def compareReplacements(hist, fil2val, lthresh=6, uthresh=50):
-  N = len(fil2val)
-  dmap = np.zeros((N,N))
-  for m in range(N):
-    for n in range(m,N):
-      dd = fil2val[m][2] - fil2val[n][2]
-      dmap[m,n] = np.sum(dd*dd)
-      dmap[n,m] = dmap[m,n]
-  print(dmap.shape)
-  
-  indx1 = np.where(hist[0]<lthresh)[0]
-  indx2 = np.where(hist[0]>uthresh)[0]
-  
-  d2 = dmap[indx1,:]
-  print(d2.shape)
-  d2 = d2[:,indx2]
-  print(d2.shape)
-  
-  fd = open('compRepl.html','w')
-  fd.write('<html><head></head><body>\n')
-  for m in range(len(indx1)):
-    mm = indx1[m]
-    nn = indx2[np.argmin(d2[m,:])]
-    fd.write('<img src="%s"><img> %d, %s -- %d, %s <img src="%s"></img><br><hr>\n'%(fil2val[mm][1],hist[0][mm],str(fil2val[mm][2]),hist[1][nn],str(fil2val[nn][2]),fil2val[nn][1]))
-  fd.write('</body></html>')
-  fd.close()
-  
-  return (dmap, indx1, indx2, d2)
-
 class mosaic():
 
-  def __init__(self, simgFile, imdir, project=None, nImages=70, imgSize=100):
+  def __init__(self, simgFile, imdir, project=None, nImages=70, imgSize=100, saveStats=False):
     self.exts = ['jpg']
     self.simgFile = simgFile
     self.imdir = imdir
@@ -50,8 +20,11 @@ class mosaic():
     self.img = None
     self.map = None
     self.thumbDir = 'thumb'
+    self.saveStats = saveStats
 
   def saveData(self):
+    if not self.saveStats:
+      return
     dd = {'fil2val':self.fil2val, 'map':self.map, 'srcim':self.srcim, 'hist':self.hist,'imdir':self.imdir,'nImages':self.nImages,'imgSize':self.imgSize}
     pickle.dump(dd,open(self.project+'.pkl','w'))
 
@@ -70,6 +43,8 @@ class mosaic():
     return True
   
   def createStatHtml(self):
+    if not self.saveStats:
+      return
     fd = open(self.project+'.html','w')
     fd.write('<html><head><title>%s</title></head><body>\n'%self.project)
     hh = []
